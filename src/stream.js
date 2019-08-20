@@ -1,8 +1,6 @@
 /*
  * @Author: luffylv
  * @Date: Mon Aug 19 2019
- * @Email: luffylv@futunn.com
- * @Company: Futu
  * @Description: stream helper. Use to judge stream type
  */
 'use strict';
