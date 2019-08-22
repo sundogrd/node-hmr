@@ -22,7 +22,6 @@
   "author": "luffylv <luffylv@futunn.com>",
   "dependencies": {
     "ejs": "^2.6.2",
-    "koa-webpack": "^5.2.4",
-    "webpack": "^4.39.2"
+    "koa-webpack": "^5.2.4"
   }
 }

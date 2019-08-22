@@ -36,7 +36,15 @@ const noop = () => {};
  * @returns {object} 返回koaWebpack instance 
  */
 module.exports = async function (app, option) {
-    let { hotClient, devMiddleware, config, compileDone = noop, views, compiler } = option;
+    let { hotClient, devMiddleware, config, compileDone = noop, views = {
+        options: {
+            opt: null,
+            root: '',
+        },
+        render: ''
+    }, compiler } = option;
+    const {render, options} = views;
+    const renderOptions = Object.assign({}, options);
     if (typeof compileDone !== 'function') {
         compileDone = noop;
     }
@@ -51,7 +59,7 @@ module.exports = async function (app, option) {
     });
     app.use(mid);
     // hack render方法
-    app.use(renderWrapper(mid, views));
+    app.use(renderWrapper(mid, renderOptions, render));
     mid.devMiddleware.waitUntilValid(compileDone.bind(mid, mid));
     return mid;
 };

@@ -1,4 +1,4 @@
-# node-hmr
+# @futu/node-hmr
 
 旨在开启HMR（hot module replacement--模块热替换）功能。提供类似于webpack-dev-server(WDS)的开发体验
 
@@ -15,7 +15,7 @@
 ```js
     // 开发环境开启热更新
     if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
-        await require('node-hmr')(app, {
+        await require('@futu/node-hmr')(app, {
             views: require('path').resolve(__dirname, '../views'), // 类似于koa-views，指定模板文件目录
             config: require('../../webpack.config'), // your webpack config
             hotClient: { //webpack-hot-client 参数
@@ -55,7 +55,7 @@ koa-wepback源码也十分简单,有兴趣可以看看。
 
 ![](./images/2019-08-20-10-46-38.png)
 
-<!-- 缺点：暂不支持使用`@futu/render`组件的项目，因为重写的render方法并没有兼容去common.futu5.com拉取模板的功能，如果使用`@futu/render`的项目使用本组件会导致公共部分无法渲染的问题。 -->
+缺点：暂不支持使用`@futu/render`组件的项目，因为重写的render方法并没有兼容去common.futu5.com拉取模板的功能，如果使用`@futu/render`的项目使用本组件会导致公共部分无法渲染的问题。
 
 # API
 
