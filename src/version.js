@@ -2,7 +2,7 @@
  * 版本比较
  * @param {*} version 被比较的版本
  * @param {*} compare 比较的版本
- * @returns 0: 相等 -1: version 小于 compare 1: version 大于 compare
+ * @returns {number} 0: 相等 -1: version 小于 compare 1: version 大于 compare
  */
 function versionCompare (version, compare) {
     try {

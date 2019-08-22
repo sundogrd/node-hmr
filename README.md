@@ -1,4 +1,4 @@
-# @futu/node-hmr
+# node-hmr
 
 旨在开启HMR（hot module replacement--模块热替换）功能。提供类似于webpack-dev-server(WDS)的开发体验
 
@@ -15,8 +15,12 @@
 ```js
     // 开发环境开启热更新
     if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
-        await require('@futu/node-hmr')(app, {
-            views: require('path').resolve(__dirname, '../views'), // 类似于koa-views，指定模板文件目录
+        await require('node-hmr')(app, {
+            views: {
+                render: 'koa-views', // koa-views
+                root: require('path').resolve(__dirname, '../views'), // 类似于koa-views，指定模板文件目录
+                opt: {map: {ejs: 'html'}} // koa-views 的第二个选项
+            },
             config: require('../../webpack.config'), // your webpack config
             hotClient: { //webpack-hot-client 参数
                 reload: false,
@@ -33,9 +37,9 @@
 
 # 实现
 
-如果是简单的纯前端项目直接使用WDS即可实现热更新，如果是类似公司框架的项目则使用WDS需要更改较多的配置。可能的更改点如下
-1. 而且由于公司本来使用koa-views来处理html模板的，所以如果强行要使用WDS来实现热更新那么还要自己处理模板文件（猜想在before和after钩子函数中可以实现）
-2. 公司项目基本都要登录，所以还可能要处理登录相关事项
+如果是简单的纯前端项目直接使用WDS即可实现热更新，如果是使用自己搭建的服务器则使用WDS需要更改较多的配置。可能的更改点如下
+1. 如果强行要使用WDS来实现热更新那么还要自己处理模板文件（猜想在before和after钩子函数中可以实现）
+2. 如果项目的界面做了登录控制，所以还可能要处理登录相关事项
 
 以上问题没有深入研究。如果你想要使用WDS来开发，那么你的配置文件可能长这样：
 
@@ -49,13 +53,12 @@
    
 koa-wepback源码也十分简单,有兴趣可以看看。
 
-我们在koa-webpack的基础上针对我们公司的node项目做了一点进一步的封装，将其中需要我们自己处理的模板渲染过程进行封装，对ctx.render方法进行重写，使其使用内存中存在的文件而非磁盘文件。
+我们在koa-webpack的基础上进一步的封装，将其中需要我们自己处理的模板渲染过程进行封装，对ctx.render方法进行了修改，使其使用内存中存在的文件而非磁盘文件。
 
 使用该中间件你基本不用更改你的webpack配置，只需简单的在对应的环境（开发环境）引入该中间件即可:
 
 ![](./images/2019-08-20-10-46-38.png)
 
-缺点：暂不支持使用`@futu/render`组件的项目，因为重写的render方法并没有兼容去common.futu5.com拉取模板的功能，如果使用`@futu/render`的项目使用本组件会导致公共部分无法渲染的问题。
 
 # API
 
@@ -63,15 +66,19 @@ koa-wepback源码也十分简单,有兴趣可以看看。
 
 ### views
 
-Type: `string`
+Type: `object`
 
-由于本中间件本质是封装了从内存中读取模板数据的功能，所以你可以通过设置该参数来查找。该参数本质是render方法的前置路径。
+由于本中间件本质是封装了从内存中读取模板数据的功能，所以你可以通过设置该参数来查找。该参数本质是koa-views的配置项加了koa-views本身。
 
 Example:
 ```js
 // middleware.js
 await hmr(app, {
-   views: require('path').resolve(__dirname, '../views'), // 类似于koa-views，指定模板文件目录
+   views: {
+       render: 'koa-views', // 使用的模板渲染库 类koa-views库
+       root: 'server/views', // koa-views 的root参数
+       opt: {map: {ejs: 'html'}} // koa-views 的options 可以指定渲染引擎
+   },
    config: require('../../webpack.config'), // your webpack config
 });
 

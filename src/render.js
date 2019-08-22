@@ -21,12 +21,12 @@ async function stream2str(stream) {
         return '';
     }
     let str = '';
-    let page = await new Promise((resolve, reject) => {
+    let page = await new Promise((resolveP, reject) => {
         stream.on('data', function (data) {
             str += data.toString();
         });
         stream.on('end', function () {
-            resolve(str);
+            resolveP(str);
         });
         stream.on('error', function (err) {
             reject(err);
@@ -80,7 +80,7 @@ function engineSourceHack(mid) {
  */
 function hackModule(hackable) {
     hackable._$set$_('getPaths', getPathsProxy);
-    console.log(hackable._$get$_('getPaths'));
+    // console.log(hackable._$get$_('getPaths'));
 }
 
 
@@ -128,10 +128,8 @@ function getPathsProxy(abs , rel , ext) {
 * @param {*} mid webpack-dev-middleware中间件实例
 * @param {*} base 基本路径
 * @param {*} path 实际的路径
-* @returns
+* @returns {*} null
 */
-
-// 也可以传module，但是需要修改过的module
 function renderWrapper(mid, renderOption, renderMidPath) {
     middlewareInstance = mid;
     const {root, opt} = renderOption;

@@ -1,5 +1,5 @@
 {
-  "name": "@futu/node-hmr",
+  "name": "node-hmr",
   "version": "1.0.0",
   "description": "a hmr middleware for mpa node server",
   "main": "src/index.js",
@@ -19,7 +19,7 @@
   "keywords": [
     "node hmr mpa"
   ],
-  "author": "luffylv <luffylv@futunn.com>",
+  "author": "breakinferno <1972952841@qq.com>",
   "dependencies": {
     "ejs": "^2.6.2",
     "koa-webpack": "^5.2.4"

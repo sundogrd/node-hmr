@@ -1,28 +1,7 @@
 /*
- * @Author: luffylv
+ * @Author: breakinferno
  * @Date: Mon Aug 19 2019
  * @Description: for node server hmr middleware
- * @Use:
- *  // 开发环境开启热更新
- *  if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
- *      await hmr(app, {
-            views: config.template.path,
-            config: require('../../webpack.config'),
-            compileDone: () => console.log('done');
-        });
- *  }
- *
- *  config
- *  hotClient
- *  devMiddleware
- *  views
- *  compileDone
- *
- *  {
- *     hotClient
- *     close
- *     devMiddleware
- *  }
  */
 
 const koaWebpack = require('koa-webpack');

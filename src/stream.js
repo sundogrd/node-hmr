@@ -1,5 +1,5 @@
 /*
- * @Author: luffylv
+ * @Author: breakinferno
  * @Date: Mon Aug 19 2019
  * @Description: stream helper. Use to judge stream type
  */
