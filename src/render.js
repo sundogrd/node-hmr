@@ -60,7 +60,7 @@ async function renderPage(mid, filename = '', data = {},){
 
 /**
  * 修改渲染引擎，使其从内存中读取模板
- * @param {*} mid 
+ * @param {*} mid koaWebpack中间件实例
  * @returns {*} 渲染后端字符串模板
  */
 function engineSourceHack(mid) {
@@ -126,29 +126,26 @@ function getPathsProxy(abs , rel , ext) {
 /**
 * 代替koa-view的render中间件包装，hack render方法，使其从内存中加载界面
 * @param {*} mid webpack-dev-middleware中间件实例
-* @param {*} base 基本路径
-* @param {*} path 实际的路径
-* @returns {*} null
+* @param {*} renderOptions koa-views 的选项参数
+* @param {*} renderMidPath 需要hack的中间件路径
+* @returns {*} 中间件
 */
-function renderWrapper(mid, renderOption, renderMidPath) {
+function renderWrapper(mid, renderOptions, renderMidPath) {
     middlewareInstance = mid;
-    const {root, opt} = renderOption;
     // 使模块可以hack
     const hackableRenderModule = hackableRequire(renderMidPath);
-   
+
     // 具体的hack
     hackModule(hackableRenderModule);
-
-    // hack 渲染引擎
-    return hackableRenderModule(root, Object.assign({}, {
+    // 添加自定义渲染引擎
+    renderOptions[1] = Object.assign({}, {
         engineSource: {
             'ejs': engineSourceHack(mid)
-        },
-    }, opt || {
-        map: {
-            'html': 'ejs'
         }
-    }));
+    }, renderOptions[1]);
+
+    // hack 渲染引擎
+    return hackableRenderModule(...renderOptions);
 }
 
 exports.renderWrapper = renderWrapper;
