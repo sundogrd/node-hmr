@@ -1,5 +1,5 @@
 {
-  "name": "node-hmr",
+  "name": "@sundogrd/node-hmr",
   "version": "1.0.0",
   "description": "a hmr middleware for mpa node server",
   "main": "src/index.js",
