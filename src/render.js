@@ -147,7 +147,7 @@ function renderWrapper(mid, renderOptions, renderMidPath) {
     // hack 渲染引擎
     return (ctx, next) => {
         ctx.render = null;
-        hackableRenderModule(...renderOptions)(ctx, next);
+        return hackableRenderModule(...renderOptions)(ctx, next);
     };
 }
 
