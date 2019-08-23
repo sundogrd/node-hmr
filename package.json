@@ -1,6 +1,6 @@
 {
   "name": "@sundogrd/node-hmr",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "a hmr middleware for mpa node server",
   "main": "src/index.js",
   "scripts": {
