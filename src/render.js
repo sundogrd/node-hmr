@@ -142,7 +142,7 @@ function renderWrapper(mid, renderOptions, renderMidPath) {
         engineSource: {
             'ejs': engineSourceHack(mid)
         }
-    }, renderOptions[1]);
+    }, renderOptions[1])
 
     // hack 渲染引擎
     return (ctx, next) => {

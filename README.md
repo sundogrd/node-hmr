@@ -1,6 +1,6 @@
 # node-hmr
 
-旨在开启HMR（hot module replacement--模块热替换）功能。提供类似于webpack-dev-server(WDS)的开发体验
+旨在开启HMR功能。
 
 # 原理
 
@@ -8,31 +8,30 @@
 
 # 注意事项
 
-如果开启这个中间件，所有文件会同webpack-dev-server一样打包到内存，只适合本地开发环境使用。
+如果开启这个中间件，所有文件会打包到内存，只适合本地开发环境使用。
 
 # 用法
 
 ```js
     // 开发环境开启热更新
-    if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
-        await require('node-hmr')(app, {
-            views: {
-                render: 'koa-views', // koa-views
-                root: require('path').resolve(__dirname, '../views'), // 类似于koa-views，指定模板文件目录
-                opt: {map: {ejs: 'html'}} // koa-views 的第二个选项
-            },
-            config: require('../../webpack.config'), // your webpack config
-            hotClient: { //webpack-hot-client 参数
-                reload: false,
-                hmr: true
-            },
-            devMiddleware: {}, // webpack-dev-middleware 中间件参数
-            // when compile done, you can get hello string
-            compileDone: (middleware) => {
-                console.log('hello');
-            }
-        });
-    }
+     await require('@futu/node-hmr')(app, {
+         views: {
+             render: '@futu/render', // 渲染组件名称 比如koa-views或者内部@futu/render
+             options: { // 渲染组件参数，同真实的参数
+                 root: config.template.path, //类似于koa-views的root，指定模板文件目录
+                 opts: config.template.options // 类似于koa-views的opts，指定渲染引擎,比如ejs啥的
+             },
+         },
+         hotClient: {}, // 热更新配置
+         devMiddleware:{ // WDM配置
+             publicPath: '/dist/'  // webpack中publicPath一般为/dist/
+         },
+         // when compile done, you can get hello string
+         compileDone: (middleware) => {
+             console.log('hello');
+         }
+     });
+
 ```
 
 # API
@@ -47,15 +46,12 @@ Type: `object`
 
 Example:
 ```js
-// middleware.js
-await hmr(app, {
-   views: {
-       render: 'koa-views', // 使用的模板渲染库 类koa-views库
-       root: 'server/views', // koa-views 的root参数
-       opt: {map: {ejs: 'html'}} // koa-views 的options 可以指定渲染引擎
-   },
-   config: require('../../webpack.config'), // your webpack config
-});
+    // middleware.js
+     await require('@futu/node-hmr')(app, {
+         views: {
+             render: 'koa-views', 
+         }
+     });
 
 // controller.js
 async function (ctx) {

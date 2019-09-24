@@ -7,22 +7,88 @@
 const koaWebpack = require('koa-webpack');
 const { renderWrapper, renderPage } = require('./render');
 const noop = () => {};
-
+const fs = require('fs');
 
 const DEFAULT_OPTIONS = {
     hotClient: {
         hmr: true,
-        reload: false
+        reload: false,
+        allEntries: true // 默认所有页面都启用hmr
     },
     devMiddleware: {},
     config: '',
     compiler: null,
     compileDone: noop,
     views: {
-        render: '',
+        render: 'koa-views',
         options: []
     }
-};
+}
+
+
+/**
+ * 获取数据的类型
+ * @param {*} data 数据
+ */
+function getType(data) {
+    return Object.prototype.toString.call(data).slice(8, -1);
+}
+
+// 由于whc只能对对象类型的入口进行处理，所以我们需要将字符串类型的入口转为数组
+function modifyConfig(config) { 
+    const { entry, output } = config;
+    // 修改entry
+    if (entry) {
+        if (getType(entry) === 'String') {
+            config['entry'] = [config.entry]
+        } else if (getType(entry) === 'Object') {
+            for (let key in entry) {
+                if (getType(entry[key]) === 'String') {
+                    entry[key] = [entry[key]]
+                }
+            }
+        } 
+    }else {
+        throw new Error('Webpack config must have entry props')
+    }
+
+    // 修改publicPath 去掉域名
+    if (!output) {
+        throw new Error('Webpack config muse have output props');
+    }
+    const { publicPath } = output;
+    if (publicPath) {
+        const regx = /\/\/<%(.*)%>/
+        output.publicPath = publicPath.replace(regx, '');
+    }
+
+    // 修改MiniCssExtractPlugin，使其支持hmr或者回退reload
+    // 对于是否存在minicssextractplugin使用简单字符串来进行判断
+    const {rules} = config.module
+    const extractRegx = /mini-css-extract-plugin/im;
+    if (rules && rules.length) {
+        rules.forEach(rule => {
+            const ruleStr = JSON.stringify(rule);
+            if (extractRegx.test(ruleStr)) {
+                const {use} = rule;
+                for (let i=0; i< use.length; i++) {
+                    if (extractRegx.test(use[i])) {
+                        use[i] = {
+                            loader: use[i],
+                            options: {
+                                hmr: true,
+                                reloadAll: true
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        });
+    }
+
+    return config;
+}
 
 /**
  * koa2热更新中间件，在koa-webpack基础上进行封装。
@@ -33,7 +99,26 @@ const DEFAULT_OPTIONS = {
 module.exports = async function (app, option) {
     let {devMiddleware, hotClient, config, compileDone, compiler, views} = option;
 
+    // 查找webpack配置
     if (!config) {
+        const cwd = process.cwd();
+        const arrs = cwd.split('/');
+        let idx = arrs.length;
+        while(idx > 0) {
+            const mayPath = arrs.slice(0, idx).join('/');
+            try {
+                fs.accessSync(mayPath + '/webpack.config.js');
+                console.log(`Got avaliable path: ${mayPath + '/webpack.config.js'}`)
+                config = require(mayPath + '/webpack.config.js');
+                break;
+            } catch(err) {
+                console.log(`Not exists path: ${mayPath + '/webpack.config.js'}`);
+            }
+            idx--;
+        }
+    }
+
+    if(!config) {
         throw new Error('You must pass webpack config!');
     }
 
@@ -43,11 +128,11 @@ module.exports = async function (app, option) {
 
     let {options} = views || DEFAULT_OPTIONS['views'];
     // 支持options支持对象和数组 统一转为数组
-    if (Object.prototype.toString.call(options).slice(8, -1) === 'Object') {
+    if (getType(options) === 'Object') {
         let args = [];
         let keys = [{
             name: 'root',
-            default: ''
+            default: 'server/views'
         }, {
             name: 'opts',
             default: {
@@ -61,20 +146,20 @@ module.exports = async function (app, option) {
         }];
         keys.forEach(key => {
             if (key['name'] in options) {
-                args.push(options[key['name']]);
+                args.push(options[key['name']])
             } else {
-                args.push(key['default']);
+                args.push(key['default'])
             }
-        });
-        options = args;
+        })
+        options = args
     }
     if (typeof compileDone !== 'function') {
         compileDone = DEFAULT_OPTIONS['compileDone'];
     }
     const mid = await koaWebpack({
         compiler: compiler || DEFAULT_OPTIONS['compiler'],
-        devMiddleware: Object({}, DEFAULT_OPTIONS['devMiddleware'], devMiddleware),
-        config,
+        devMiddleware: Object.assign({}, DEFAULT_OPTIONS['devMiddleware'], devMiddleware),
+        config: modifyConfig(config),
         hotClient: Object.assign({}, DEFAULT_OPTIONS['hotClient'], hotClient)
     });
     app.use(mid);
